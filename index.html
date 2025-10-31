@@ -1,17 +1,1173 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
-    <title>轉(交)換債月交易彙總表</title>
-    <script type="module" crossorigin src="/assets/index-7308992b.js"></script>
-    <link rel="stylesheet" href="/assets/index-fbc29355.css">
-  </head>
-  <body>
-    <div id="app"></div>
-    
-  </body>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CB可轉債發行歷史價格查詢 - Rex大叔的168台股投資教室</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #4a5568 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 16px;
+            padding: 35px 40px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+            border-top: 5px solid #2563eb;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 12px;
+        }
+
+        .header-icon {
+            font-size: 2em;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .header h1 {
+            font-size: 2em;
+            color: #1e40af;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .header .subtitle {
+            text-align: center;
+            font-size: 0.95em;
+            color: #64748b;
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        .header .author {
+            text-align: center;
+            font-size: 0.9em;
+            color: #94a3b8;
+            margin-top: 8px;
+            padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tab-button {
+            padding: 14px 32px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #475569;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .tab-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            border-color: #3b82f6;
+            color: #1e40af;
+        }
+
+        .tab-button.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 16px;
+            padding: 35px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .info-box {
+            background: #eff6ff;
+            padding: 20px 24px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .info-box h3 {
+            color: #1e40af;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-box p {
+            color: #334155;
+            line-height: 1.8;
+            font-size: 14px;
+            margin: 8px 0;
+        }
+
+        .info-box ul {
+            margin: 10px 0 0 20px;
+            color: #334155;
+            line-height: 1.8;
+        }
+
+        .info-box li {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+
+        .info-box strong {
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        .highlight-box {
+            background: #fef3c7;
+            padding: 20px 24px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .highlight-box h3 {
+            color: #92400e;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .highlight-box p, .highlight-box li {
+            color: #78350f;
+            line-height: 1.8;
+            font-size: 14px;
+        }
+
+        .highlight-box ul {
+            margin: 10px 0 0 20px;
+        }
+
+        .highlight-box li {
+            margin: 8px 0;
+        }
+
+        .highlight-box strong {
+            color: #92400e;
+            font-weight: 600;
+        }
+
+        .warning-box {
+            background: #fee2e2;
+            padding: 20px 24px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 4px solid #ef4444;
+        }
+
+        .warning-box h3 {
+            color: #991b1b;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .warning-box p, .warning-box li {
+            color: #7f1d1d;
+            line-height: 1.8;
+            font-size: 14px;
+        }
+
+        .warning-box ul {
+            margin: 10px 0 0 20px;
+        }
+
+        .warning-box li {
+            margin: 8px 0;
+        }
+
+        .search-box {
+            margin-bottom: 30px;
+        }
+
+        .search-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 15px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .batch-search-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+            align-items: flex-start;
+        }
+
+        .batch-input-wrapper {
+            flex: 1;
+        }
+
+        .batch-input {
+            width: 100%;
+            padding: 14px 18px;
+            font-size: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .batch-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .add-button, .clear-button {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .add-button {
+            background: #2563eb;
+            color: white;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+        }
+
+        .add-button:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        .clear-button {
+            background: #ef4444;
+            color: white;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .clear-button:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            padding: 25px;
+            border-radius: 12px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.25);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 24px rgba(37, 99, 235, 0.35);
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            margin-bottom: 12px;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: 700;
+            margin: 5px 0;
+        }
+
+        .stat-card .sub {
+            font-size: 13px;
+            margin-top: 8px;
+            opacity: 0.85;
+        }
+
+        .price-range-stats {
+            margin-bottom: 35px;
+        }
+
+        .price-range-stats h2 {
+            margin-bottom: 20px;
+            color: #1e40af;
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+
+        .range-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+        }
+
+        .range-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            border-left: 5px solid #3b82f6;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: all 0.3s;
+        }
+
+        .range-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            border-left-color: #2563eb;
+        }
+
+        .range-card .range-name {
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        .range-card .range-count {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2563eb;
+            margin: 8px 0;
+        }
+
+        .range-card .range-percent {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 6px;
+        }
+
+        .range-card .range-avg {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .issue-analysis {
+            margin-bottom: 35px;
+        }
+
+        .issue-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+        }
+
+        .issue-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .issue-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .issue-card.best {
+            border: 2px solid #f59e0b;
+            background: linear-gradient(to bottom, #fffbeb 0%, #ffffff 100%);
+        }
+
+        .issue-card .issue-num {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 8px;
+        }
+
+        .issue-card .issue-count {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 10px;
+        }
+
+        .issue-card .issue-stat {
+            font-size: 13px;
+            color: #334155;
+            margin: 4px 0;
+        }
+
+        .issue-card .issue-highlight {
+            background: #fbbf24;
+            color: #78350f;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+        }
+
+        thead {
+            background: #2563eb;
+            color: white;
+        }
+
+        th {
+            padding: 16px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #f1f5f9;
+            transition: background-color 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        td {
+            padding: 14px 15px;
+            font-size: 14px;
+            color: #334155;
+        }
+
+        .no-result {
+            text-align: center;
+            padding: 50px;
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        .total-row {
+            background: #dbeafe !important;
+            font-weight: 700;
+            border-top: 2px solid #3b82f6 !important;
+            color: #1e40af;
+        }
+
+        .total-row td {
+            padding: 16px 15px;
+        }
+
+        .振幅-high {
+            color: #dc2626;
+            font-weight: 700;
+        }
+
+        .振幅-medium {
+            color: #ea580c;
+            font-weight: 600;
+        }
+
+        .振幅-low {
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        .footer {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 30px;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            border-top: 3px solid #3b82f6;
+        }
+
+        .footer-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .footer h3 {
+            color: #1e40af;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .footer p {
+            color: #475569;
+            font-size: 14px;
+            line-height: 1.8;
+            margin: 10px 0;
+        }
+
+        .footer .copyright {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .footer a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+            color: #1d4ed8;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .header-title {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab-button {
+                width: 100%;
+            }
+
+            .batch-search-container {
+                flex-direction: column;
+            }
+
+            .add-button, .clear-button {
+                width: 100%;
+            }
+
+            table {
+                font-size: 13px;
+            }
+
+            th, td {
+                padding: 10px 8px;
+            }
+
+            .issue-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-title">
+                <span class="header-icon">📊</span>
+                <h1>CB可轉債發行歷史價格查詢系統</h1>
+            </div>
+            <div class="subtitle">掛牌最高價 | 掛牌最低價 | 振幅分析 | 發行次數績效研究</div>
+            <div class="author">by Rex大叔的168台股投資教室</div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('single')">🔍 單一查詢</button>
+            <button class="tab-button" onclick="switchTab('batch')">📊 批次查詢</button>
+            <button class="tab-button" onclick="switchTab('all')">📋 全部資料</button>
+            <button class="tab-button" onclick="switchTab('analysis')">🔬 發行次數分析</button>
+        </div>
+
+        <!-- 單一查詢 -->
+        <div id="single" class="tab-content active">
+            <div class="info-box">
+                <h3>📌 使用說明</h3>
+                <p><strong>查詢方式：</strong>輸入CB代號或公司名稱關鍵字即可即時查詢</p>
+                <p><strong>使用範例：</strong>輸入「11011」或「台泥」，立即顯示該CB的歷史價格資料</p>
+                <p><strong>名稱說明：</strong>名稱最後的「一、二、三...」代表該公司發行可轉債的次數</p>
+            </div>
+
+            <div class="highlight-box">
+                <h3>💡 功能特色</h3>
+                <ul>
+                    <li><strong>即時搜尋：</strong>輸入關鍵字立即顯示結果，無需按Enter</li>
+                    <li><strong>關鍵數據：</strong>顯示掛牌最高價、最低價及振幅百分比</li>
+                    <li><strong>振幅標示：</strong>紅色為高波動(>50%)、橘色為中波動(20-50%)、綠色為低波動(<20%)</li>
+                </ul>
+            </div>
+
+            <div class="search-box">
+                <label class="search-label">請輸入關鍵字</label>
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    id="singleSearchInput"
+                    placeholder="例如: 11011 或 台泥"
+                    onkeyup="searchSingle(event)"
+                >
+            </div>
+            <div id="singleResult"></div>
+        </div>
+
+        <!-- 批次查詢 -->
+        <div id="batch" class="tab-content">
+            <div class="info-box">
+                <h3>📌 批次查詢說明</h3>
+                <p><strong>查詢方式：</strong>自由加入多檔不同標的進行比較分析（最多20檔）</p>
+                <p><strong>顯示內容：</strong>綜合統計表、平均最高價、平均最低價、振幅分析</p>
+                <p><strong>適合用於：</strong>比較不同公司、評估投資組合、制定投資策略</p>
+            </div>
+
+            <div class="highlight-box">
+                <h3>💡 使用技巧</h3>
+                <ul>
+                    <li><strong>逐筆加入：</strong>輸入CB代碼後按Enter或點擊新增按鈕</li>
+                    <li><strong>即時統計：</strong>自動計算平均最高價、最低價及振幅</li>
+                    <li><strong>靈活移除：</strong>可隨時移除不需要的項目重新統計</li>
+                    <li><strong>合計顯示：</strong>表格最下方顯示所有項目的平均數據</li>
+                </ul>
+            </div>
+
+            <div class="batch-search-container">
+                <div class="batch-input-wrapper">
+                    <input 
+                        type="text" 
+                        class="batch-input" 
+                        id="batchInput"
+                        placeholder="輸入CB代碼 (例如: 11011)，按Enter或點擊新增"
+                        onkeyup="addBatchItem(event)"
+                    >
+                </div>
+                <button class="add-button" onclick="addBatchItem()">➕ 新增</button>
+                <button class="clear-button" onclick="clearBatch()">🗑️ 清除全部</button>
+            </div>
+            <div id="batchStats" style="margin-bottom: 20px;"></div>
+            <div id="batchResult"></div>
+        </div>
+
+        <!-- 全部資料 -->
+        <div id="all" class="tab-content">
+            <div class="info-box">
+                <h3>📌 資料說明</h3>
+                <p><strong>資料期間：</strong>93年-114年10月31日（涵蓋超過20年完整歷史）</p>
+                <p><strong>資料內容：</strong>包含所有CB可轉債的掛牌最高價、最低價及振幅統計</p>
+                <p><strong>統計範圍：</strong>總計2,209檔CB，提供完整市場全貌</p>
+            </div>
+
+            <div class="highlight-box">
+                <h3>💡 數據亮點</h3>
+                <ul>
+                    <li><strong>振幅分布：</strong>超過53%的CB掛牌後振幅超過50%，波動相當顯著</li>
+                    <li><strong>價格表現：</strong>約46%的CB最高價達150元以上，顯示可轉債具有相當的上漲潛力</li>
+                    <li><strong>風險特性：</strong>平均振幅達82%，投資人需特別注意價格波動風險</li>
+                    <li><strong>保護機制：</strong>平均最低價約92元，接近面額100元，顯示下檔保護效果</li>
+                </ul>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>總計檔數</h3>
+                    <div class="number" id="totalCount">-</div>
+                    <div class="sub">歷史發行總數</div>
+                </div>
+                <div class="stat-card">
+                    <h3>最高價平均</h3>
+                    <div class="number" id="avgHighest">-</div>
+                    <div class="sub">掛牌表現</div>
+                </div>
+                <div class="stat-card">
+                    <h3>最低價平均</h3>
+                    <div class="number" id="avgLowest">-</div>
+                    <div class="sub">保護價格</div>
+                </div>
+            </div>
+
+            <div class="price-range-stats">
+                <h2>📊 掛牌最高價區間統計分析</h2>
+                <div class="range-grid" id="rangeStats"></div>
+            </div>
+
+            <div class="warning-box">
+                <h3>⚠️ 投資風險提示</h3>
+                <ul>
+                    <li>本資料僅供參考，不構成任何投資建議或推薦</li>
+                    <li>可轉債投資涉及價格波動風險，投資人應審慎評估自身風險承受能力</li>
+                    <li>過去績效不代表未來表現，實際投資結果可能有所不同</li>
+                    <li>投資前請詳閱公開說明書，了解商品特性與風險</li>
+                </ul>
+            </div>
+
+            <div id="allDataResult"></div>
+        </div>
+
+        <!-- 發行次數分析 -->
+        <div id="analysis" class="tab-content">
+            <div class="info-box">
+                <h3>📌 分析說明</h3>
+                <p><strong>研究主題：</strong>可轉債發行次數與市場表現的關聯性研究</p>
+                <p><strong>分析方法：</strong>統計不同發行次數的CB在掛牌後的價格表現</p>
+                <p><strong>資料範圍：</strong>從第一次到第十次發行，共2,047檔有標示發行次數的CB</p>
+            </div>
+
+            <div class="highlight-box">
+                <h3>🎯 重大發現</h3>
+                <ul>
+                    <li><strong>第九次發行表現最佳：</strong>平均最高價達216.60元，遠超其他次數</li>
+                    <li><strong>第九次振幅最大：</strong>平均振幅122.6%，且100%的CB振幅超過50%</li>
+                    <li><strong>第一次發行數量最多：</strong>879檔佔總數43%，但表現並非最佳</li>
+                    <li><strong>多次發行公司體質：</strong>能多次發行CB的公司通常財務穩健、市場認可度高</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <h3>⚠️ 分析限制說明</h3>
+                <ul>
+                    <li><strong>樣本數差異：</strong>第九次發行僅5檔，統計代表性較低，需謹慎解讀</li>
+                    <li><strong>存活者偏誤：</strong>能發行多次CB的公司本身可能就是優質企業，造成統計偏誤</li>
+                    <li><strong>時間因素：</strong>不同時期發行的CB受市場環境影響，無法單純比較</li>
+                    <li><strong>不可預測性：</strong>過去數據不能預測未來，投資仍需個案分析</li>
+                </ul>
+            </div>
+
+            <div class="issue-analysis">
+                <h2 style="color: #1e40af; margin-bottom: 20px; font-weight: 700;">📊 各次發行績效比較</h2>
+                <div class="issue-grid" id="issueGrid"></div>
+            </div>
+
+            <div class="info-box">
+                <h3>💭 投資思考方向</h3>
+                <ul>
+                    <li><strong>質重於量：</strong>發行次數多寡不是唯一指標，公司基本面更重要</li>
+                    <li><strong>市場時機：</strong>發行時的市場環境、產業景氣都會影響表現</li>
+                    <li><strong>轉換條件：</strong>轉換價格、轉換比率等條件比發行次數更關鍵</li>
+                    <li><strong>綜合評估：</strong>應結合公司財務、產業前景、市場狀況等多方面分析</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="footer-content">
+                <h3>⚠️ 投資風險提示</h3>
+                <p>本資料僅供參考，不構成任何投資建議或個股推薦。可轉債投資涉及市場風險，投資人應審慎評估自身風險承受能力。過去績效不代表未來表現，實際投資結果可能有所不同。</p>
+                
+                <p style="margin-top: 15px;"><strong>📋 資料來源：</strong>本系統資料整理自公開資訊，實際數據以主管機關及發行公司最新公告為準。</p>
+                
+                <div class="copyright">
+                    <p>©️ 本系統由 <a href="#">Rex大叔的168台股投資教室</a> 整理製作，僅供個人學習與研究使用。</p>
+                    <p>如有任何問題或建議，歡迎交流討論。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cbData = [];
+        let batchItems = [];
+        let issueAnalysis = null;
+
+        // 載入資料
+        async function loadData() {
+            try {
+                const response = await fetch('cb_data.json');
+                cbData = await response.json();
+                console.log(`已載入 ${cbData.length} 筆資料`);
+                updateAllDataStats();
+                loadIssueAnalysis();
+            } catch (error) {
+                console.error('載入資料失敗:', error);
+            }
+        }
+
+        // 載入發行次數分析
+        function loadIssueAnalysis() {
+            const issueStats = {};
+            const chineseNums = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+            
+            cbData.forEach(item => {
+                const lastChar = item.name[item.name.length - 1];
+                if (chineseNums.includes(lastChar)) {
+                    if (!issueStats[lastChar]) {
+                        issueStats[lastChar] = {
+                            count: 0,
+                            totalHighest: 0,
+                            totalLowest: 0,
+                            items: []
+                        };
+                    }
+                    issueStats[lastChar].count++;
+                    issueStats[lastChar].totalHighest += item.highest;
+                    issueStats[lastChar].totalLowest += item.lowest;
+                    issueStats[lastChar].items.push(item);
+                }
+            });
+
+            const results = [];
+            chineseNums.forEach(num => {
+                if (issueStats[num]) {
+                    const stat = issueStats[num];
+                    const avgHighest = stat.totalHighest / stat.count;
+                    const avgLowest = stat.totalLowest / stat.count;
+                    const avgAmplitude = ((avgHighest - avgLowest) / avgLowest) * 100;
+                    
+                    results.push({
+                        num: num,
+                        count: stat.count,
+                        avgHighest: avgHighest,
+                        avgLowest: avgLowest,
+                        avgAmplitude: avgAmplitude
+                    });
+                }
+            });
+
+            issueAnalysis = results;
+            updateIssueGrid();
+        }
+
+        function updateIssueGrid() {
+            if (!issueAnalysis || issueAnalysis.length === 0) return;
+
+            const gridDiv = document.getElementById('issueGrid');
+            const best = issueAnalysis.reduce((max, item) => 
+                item.avgHighest > max.avgHighest ? item : max
+            );
+
+            let html = '';
+            issueAnalysis.forEach(item => {
+                const isBest = item.num === best.num;
+                html += `
+                    <div class="issue-card ${isBest ? 'best' : ''}">
+                        <div class="issue-num">第${item.num}次</div>
+                        <div class="issue-count">${item.count} 檔</div>
+                        <div class="issue-stat">最高 ${item.avgHighest.toFixed(1)}</div>
+                        <div class="issue-stat">最低 ${item.avgLowest.toFixed(1)}</div>
+                        <div class="issue-stat">振幅 ${item.avgAmplitude.toFixed(1)}%</div>
+                        ${isBest ? '<div class="issue-highlight">★ 表現最佳</div>' : ''}
+                    </div>
+                `;
+            });
+
+            gridDiv.innerHTML = html;
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'all' && cbData.length > 0) {
+                showAllData();
+            } else if (tabName === 'analysis' && issueAnalysis) {
+                updateIssueGrid();
+            }
+        }
+
+        function searchSingle(event) {
+            const keyword = document.getElementById('singleSearchInput').value.trim();
+            const resultDiv = document.getElementById('singleResult');
+
+            if (!keyword) {
+                resultDiv.innerHTML = '';
+                return;
+            }
+
+            const results = cbData.filter(item => 
+                item.code.includes(keyword) || item.name.includes(keyword)
+            );
+
+            if (results.length === 0) {
+                resultDiv.innerHTML = '<div class="no-result">查無資料</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = createTable(results);
+        }
+
+        function addBatchItem(event) {
+            if (event && event.key !== 'Enter') return;
+
+            const input = document.getElementById('batchInput');
+            const code = input.value.trim();
+
+            if (!code) return;
+
+            const item = cbData.find(d => d.code === code);
+            
+            if (!item) {
+                alert('查無此代碼');
+                return;
+            }
+
+            if (batchItems.some(b => b.code === code)) {
+                alert('此代碼已加入');
+                return;
+            }
+
+            if (batchItems.length >= 20) {
+                alert('最多只能加入20檔');
+                return;
+            }
+
+            batchItems.push(item);
+            input.value = '';
+            updateBatchDisplay();
+        }
+
+        function clearBatch() {
+            if (batchItems.length === 0) return;
+            if (confirm('確定要清除所有項目嗎?')) {
+                batchItems = [];
+                updateBatchDisplay();
+            }
+        }
+
+        function updateBatchDisplay() {
+            const statsDiv = document.getElementById('batchStats');
+            const resultDiv = document.getElementById('batchResult');
+
+            if (batchItems.length === 0) {
+                statsDiv.innerHTML = '';
+                resultDiv.innerHTML = '<div class="no-result">尚未新增任何項目<br>請在上方輸入框輸入CB代碼後按Enter或點擊新增按鈕</div>';
+                return;
+            }
+
+            const totalHighest = batchItems.reduce((sum, item) => sum + (item.highest || 0), 0);
+            const totalLowest = batchItems.reduce((sum, item) => sum + (item.lowest || 0), 0);
+            const avgHighest = (totalHighest / batchItems.length).toFixed(2);
+            const avgLowest = (totalLowest / batchItems.length).toFixed(2);
+            const avgAmplitude = ((avgHighest - avgLowest) / avgLowest * 100).toFixed(1);
+
+            statsDiv.innerHTML = `
+                <div class="info-box" style="background: #dbeafe; border-color: #3b82f6;">
+                    <strong style="color: #1e40af; font-size: 16px;">
+                        📊 已選擇 ${batchItems.length} 檔 
+                        | 最高價平均: ${avgHighest} 元
+                        | 最低價平均: ${avgLowest} 元
+                        | 平均振幅: ${avgAmplitude}%
+                    </strong>
+                </div>
+            `;
+
+            resultDiv.innerHTML = createTable(batchItems, true);
+        }
+
+        function removeBatchItem(code) {
+            batchItems = batchItems.filter(item => item.code !== code);
+            updateBatchDisplay();
+        }
+
+        function createTable(data, showRemove = false) {
+            if (data.length === 0) return '';
+
+            const totalHighest = data.reduce((sum, item) => sum + (item.highest || 0), 0);
+            const totalLowest = data.reduce((sum, item) => sum + (item.lowest || 0), 0);
+            const avgHighest = (totalHighest / data.length).toFixed(2);
+            const avgLowest = (totalLowest / data.length).toFixed(2);
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>代號</th>
+                            <th>名稱</th>
+                            <th>掛牌最高價</th>
+                            <th>掛牌最低價</th>
+                            <th>振幅</th>
+                            ${showRemove ? '<th>操作</th>' : ''}
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.forEach(item => {
+                const amplitude = ((item.highest - item.lowest) / item.lowest * 100).toFixed(1);
+                const amplitudeClass = amplitude > 50 ? 'vibration-high' : amplitude > 20 ? 'vibration-medium' : 'vibration-low';
+                
+                html += `
+                    <tr>
+                        <td>${item.code}</td>
+                        <td>${item.name}</td>
+                        <td>${item.highest}</td>
+                        <td>${item.lowest}</td>
+                        <td class="${amplitudeClass}">${amplitude}%</td>
+                        ${showRemove ? `<td><button onclick="removeBatchItem('${item.code}')" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">移除</button></td>` : ''}
+                    </tr>
+                `;
+            });
+
+            if (data.length > 1) {
+                const totalAmplitude = ((avgHighest - avgLowest) / avgLowest * 100).toFixed(1);
+                html += `
+                    <tr class="total-row">
+                        <td colspan="2">📊 合計/平均 (${data.length}檔)</td>
+                        <td>${avgHighest}</td>
+                        <td>${avgLowest}</td>
+                        <td>${totalAmplitude}%</td>
+                        ${showRemove ? '<td></td>' : ''}
+                    </tr>
+                `;
+            }
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            return html;
+        }
+
+        function updateAllDataStats() {
+            const totalCount = cbData.length;
+            const totalHighest = cbData.reduce((sum, item) => sum + (item.highest || 0), 0);
+            const totalLowest = cbData.reduce((sum, item) => sum + (item.lowest || 0), 0);
+            const avgHighest = (totalHighest / totalCount).toFixed(2);
+            const avgLowest = (totalLowest / totalCount).toFixed(2);
+
+            document.getElementById('totalCount').textContent = totalCount;
+            document.getElementById('avgHighest').textContent = avgHighest;
+            document.getElementById('avgLowest').textContent = avgLowest;
+
+            const ranges = {
+                '110以下': { min: 0, max: 110, count: 0, total: 0 },
+                '110-130': { min: 110, max: 130, count: 0, total: 0 },
+                '130-150': { min: 130, max: 150, count: 0, total: 0 },
+                '150-175': { min: 150, max: 175, count: 0, total: 0 },
+                '175-200': { min: 175, max: 200, count: 0, total: 0 },
+                '200以上': { min: 200, max: Infinity, count: 0, total: 0 }
+            };
+
+            cbData.forEach(item => {
+                const price = item.highest;
+                for (let range in ranges) {
+                    if (price >= ranges[range].min && price < ranges[range].max) {
+                        ranges[range].count++;
+                        ranges[range].total += price;
+                        break;
+                    }
+                }
+            });
+
+            let rangeHtml = '';
+            for (let range in ranges) {
+                const data = ranges[range];
+                const percent = ((data.count / totalCount) * 100).toFixed(1);
+                const avg = data.count > 0 ? (data.total / data.count).toFixed(2) : 0;
+                
+                rangeHtml += `
+                    <div class="range-card">
+                        <div class="range-name">${range}</div>
+                        <div class="range-count">${data.count} 檔</div>
+                        <div class="range-percent">占比 ${percent}%</div>
+                        <div class="range-avg">平均 ${avg} 元</div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('rangeStats').innerHTML = rangeHtml;
+        }
+
+        function showAllData() {
+            const resultDiv = document.getElementById('allDataResult');
+            resultDiv.innerHTML = createTable(cbData);
+        }
+
+        window.onload = function() {
+            loadData();
+        };
+    </script>
+</body>
 </html>

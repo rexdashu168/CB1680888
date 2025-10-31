@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel轉JSON轉換工具 - Rex大叔</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #4a5568 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #1e40af;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+
+        .step {
+            background: #eff6ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .step h3 {
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .step p {
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .upload-area {
+            border: 3px dashed #3b82f6;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 20px 0;
+        }
+
+        .upload-area:hover {
+            background: #eff6ff;
+            border-color: #2563eb;
+        }
+
+        .upload-area.dragover {
+            background: #dbeafe;
+            border-color: #1d4ed8;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            display: none;
+            background: #ecfdf5;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #10b981;
+            margin-top: 20px;
+        }
+
+        .result h3 {
+            color: #065f46;
+            margin-bottom: 10px;
+        }
+
+        .result p {
+            color: #064e3b;
+            margin: 5px 0;
+        }
+
+        .warning {
+            background: #fef3c7;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f59e0b;
+            margin: 20px 0;
+        }
+
+        .warning p {
+            color: #78350f;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .info {
+            background: #eff6ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .info p {
+            color: #1e40af;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>📊 Excel轉JSON轉換工具</h1>
+            <p class="subtitle">將output.xlsx轉換成cb_data.json</p>
+
+            <div class="step">
+                <h3>📌 使用說明</h3>
+                <p><strong>步驟1:</strong> 點擊下方上傳區域,選擇你的output.xlsx檔案</p>
+                <p><strong>步驟2:</strong> 系統自動轉換為cb_data.json</p>
+                <p><strong>步驟3:</strong> 點擊下載按鈕,取得轉換好的檔案</p>
+                <p><strong>步驟4:</strong> 將cb_data.json上傳到GitHub</p>
+            </div>
+
+            <div class="info">
+                <p><strong>✅ Excel格式要求:</strong></p>
+                <p>• 第一欄:代號 | 第二欄:名稱 | 第三欄:最高價 | 第四欄:最低價</p>
+                <p>• 第一行為標題行(會自動跳過)</p>
+            </div>
+
+            <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📁</div>
+                <p style="font-size: 18px; color: #1e40af; font-weight: 600;">點擊選擇檔案或拖曳到此處</p>
+                <p style="color: #64748b; margin-top: 10px;">支援 .xlsx 和 .xls 格式</p>
+            </div>
+
+            <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFile(this.files[0])">
+
+            <div class="result" id="result">
+                <h3>✅ 轉換成功!</h3>
+                <p id="resultInfo"></p>
+                <button id="downloadBtn" onclick="downloadJSON()">📥 下載 cb_data.json</button>
+            </div>
+
+            <div class="warning">
+                <p><strong>⚠️ 注意事項:</strong></p>
+                <p>• 轉換過程完全在您的瀏覽器中進行,資料不會上傳到任何伺服器</p>
+                <p>• 請確保Excel檔案格式正確,否則可能轉換失敗</p>
+                <p>• 轉換後請立即下載,重新整理頁面會遺失資料</p>
+            </div>
+        </div>
+
+        <div class="card" style="background: #eff6ff; border: 2px solid #3b82f6;">
+            <h3 style="color: #1e40af; margin-bottom: 15px;">💡 以後更新資料的流程</h3>
+            <p style="color: #334155; line-height: 1.8;">
+                1️⃣ 更新你的output.xlsx檔案<br>
+                2️⃣ 打開這個轉換工具網頁(存在書籤)<br>
+                3️⃣ 上傳output.xlsx<br>
+                4️⃣ 下載轉換好的cb_data.json<br>
+                5️⃣ 上傳cb_data.json到GitHub<br>
+                <br>
+                <strong style="color: #1e40af;">✨ 就這麼簡單!不需要再找我幫忙了!</strong>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let convertedData = null;
+
+        // 拖曳上傳
+        const uploadArea = document.getElementById('uploadArea');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        });
+
+        // 處理檔案
+        function handleFile(file) {
+            if (!file) return;
+
+            // 檢查檔案類型
+            const validTypes = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
+                               'application/vnd.ms-excel'];
+            
+            if (!validTypes.includes(file.type) && !file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+                alert('❌ 請上傳Excel檔案(.xlsx或.xls)');
+                return;
+            }
+
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    // 讀取第一個工作表
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+                    
+                    // 轉換格式
+                    const result = [];
+                    for (let i = 1; i < jsonData.length; i++) {  // 從1開始,跳過標題
+                        const row = jsonData[i];
+                        if (row[0]) {  // 如果有代號
+                            result.push({
+                                code: String(row[0]),
+                                name: row[1],
+                                highest: row[2],
+                                lowest: row[3]
+                            });
+                        }
+                    }
+                    
+                    if (result.length === 0) {
+                        alert('❌ 檔案中沒有找到有效資料');
+                        return;
+                    }
+                    
+                    convertedData = result;
+                    
+                    // 顯示結果
+                    document.getElementById('result').style.display = 'block';
+                    document.getElementById('resultInfo').innerHTML = `
+                        成功轉換 <strong>${result.length}</strong> 筆資料<br>
+                        檔案大小: ${(JSON.stringify(result).length / 1024).toFixed(1)} KB
+                    `;
+                    
+                    // 滾動到結果區域
+                    document.getElementById('result').scrollIntoView({behavior: 'smooth'});
+                    
+                } catch (error) {
+                    alert('❌ 轉換失敗: ' + error.message);
+                    console.error(error);
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 下載JSON
+        function downloadJSON() {
+            if (!convertedData) {
+                alert('❌ 沒有可下載的資料');
+                return;
+            }
+
+            const jsonString = JSON.stringify(convertedData, null, 2);
+            const blob = new Blob([jsonString], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'cb_data.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('✅ 下載完成!請將cb_data.json上傳到GitHub');
+        }
+    </script>
+</body>
+</html>
