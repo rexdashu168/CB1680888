@@ -888,6 +888,11 @@
                     <li><strong>產業分類分析：</strong>比較不同產業的CB表現差異</li>
                     <li><strong>詢圈vs競拍：</strong>分析發行方式對掛牌表現的影響</li>
                     <li><strong>擔保條件：</strong>有擔保vs無擔保的表現比較</li>
+                    <li><strong>發行規模：</strong>不同發行規模對CB表現的影響</li>
+                    <li><strong>發行年期：</strong>3年、5年、7年等不同年期的績效比較</li>
+                    <li><strong>承銷券商：</strong>不同券商承銷的CB表現差異(前20名)</li>
+                    <li><strong>股本大小：</strong>公司規模對CB表現的影響分析</li>
+                    <li><strong>轉換價格：</strong>不同轉換價格區間的績效表現</li>
                 </ul>
             </div>
 
@@ -909,6 +914,40 @@
                 <h2 style="color: #1e40af; margin-bottom: 20px; font-weight: 700;">📊 有無擔保績效分析</h2>
                 <div class="range-grid" id="collateralGrid"></div>
                 <div id="collateralInsight" style="margin-top: 20px;"></div>
+            </div>
+
+            <!-- 發行規模分析 -->
+            <div style="margin: 30px 0;">
+                <h2 style="color: #1e40af; margin-bottom: 20px; font-weight: 700;">📊 發行規模績效分析</h2>
+                <div class="range-grid" id="issueSizeGrid"></div>
+                <div id="issueSizeInsight" style="margin-top: 20px;"></div>
+            </div>
+
+            <!-- 發行年期分析 -->
+            <div style="margin: 30px 0;">
+                <h2 style="color: #1e40af; margin-bottom: 20px; font-weight: 700;">📊 發行年期績效分析</h2>
+                <div class="range-grid" id="issueYearsGrid"></div>
+                <div id="issueYearsInsight" style="margin-top: 20px;"></div>
+            </div>
+
+            <!-- 承銷券商分析 -->
+            <div style="margin: 30px 0;">
+                <h2 style="color: #1e40af; margin-bottom: 20px; font-weight: 700;">📊 承銷券商績效分析(前20名)</h2>
+                <div class="issue-grid" id="underwriterGrid"></div>
+            </div>
+
+            <!-- 股本大小分析 -->
+            <div style="margin: 30px 0;">
+                <h2 style="color: #1e40af; margin-bottom: 20px; font-weight: 700;">📊 股本大小績效分析</h2>
+                <div class="range-grid" id="capitalGrid"></div>
+                <div id="capitalInsight" style="margin-top: 20px;"></div>
+            </div>
+
+            <!-- 轉換價格分析 -->
+            <div style="margin: 30px 0;">
+                <h2 style="color: #1e40af; margin-bottom: 20px; font-weight: 700;">📊 轉換價格區間績效分析</h2>
+                <div class="range-grid" id="conversionPriceGrid"></div>
+                <div id="conversionPriceInsight" style="margin-top: 20px;"></div>
             </div>
 
             <div class="warning-box">
@@ -972,6 +1011,11 @@
             analyzeByIndustry();
             analyzeByInquiry();
             analyzeByCollateral();
+            analyzeByIssueSize();
+            analyzeByIssueYears();
+            analyzeByUnderwriter();
+            analyzeByCapital();
+            analyzeByConversionPrice();
         }
 
         // 產業分類分析
@@ -1125,6 +1169,272 @@
             
             document.getElementById('collateralGrid').innerHTML = html;
             document.getElementById('collateralInsight').innerHTML = insightHtml;
+        }
+
+        // 發行規模分析
+        function analyzeByIssueSize() {
+            const sizeRanges = {
+                '10億以下': { min: 0, max: 10, count: 0, totalHighest: 0, totalLowest: 0 },
+                '10-30億': { min: 10, max: 30, count: 0, totalHighest: 0, totalLowest: 0 },
+                '30-50億': { min: 30, max: 50, count: 0, totalHighest: 0, totalLowest: 0 },
+                '50-80億': { min: 50, max: 80, count: 0, totalHighest: 0, totalLowest: 0 },
+                '80億以上': { min: 80, max: Infinity, count: 0, totalHighest: 0, totalLowest: 0 }
+            };
+            
+            cbData.forEach(item => {
+                const size = item.issue_size;
+                if (!size || size === 0 || size === '') return;
+                
+                for (let range in sizeRanges) {
+                    if (size >= sizeRanges[range].min && size < sizeRanges[range].max) {
+                        sizeRanges[range].count++;
+                        sizeRanges[range].totalHighest += item.highest || 0;
+                        sizeRanges[range].totalLowest += item.lowest || 0;
+                        break;
+                    }
+                }
+            });
+
+            let html = '';
+            let insightHtml = '<div class="info-box"><h3>💡 分析觀察</h3><ul>';
+            
+            Object.entries(sizeRanges).forEach(([range, stats]) => {
+                if (stats.count === 0) return;
+                
+                const avgHighest = (stats.totalHighest / stats.count).toFixed(2);
+                const avgLowest = (stats.totalLowest / stats.count).toFixed(2);
+                const avgAmplitude = (((stats.totalHighest / stats.count - stats.totalLowest / stats.count) / (stats.totalLowest / stats.count)) * 100).toFixed(1);
+                
+                html += `
+                    <div class="range-card">
+                        <div class="range-name">${range}</div>
+                        <div class="range-count">${stats.count} 檔</div>
+                        <div class="range-avg">最高 ${avgHighest} | 最低 ${avgLowest}</div>
+                        <div class="range-avg">振幅 ${avgAmplitude}%</div>
+                    </div>
+                `;
+                
+                insightHtml += `<li><strong>${range}(${stats.count}檔):</strong> 平均最高價${avgHighest}元，振幅${avgAmplitude}%</li>`;
+            });
+            
+            insightHtml += '</ul></div>';
+            
+            document.getElementById('issueSizeGrid').innerHTML = html;
+            document.getElementById('issueSizeInsight').innerHTML = insightHtml;
+        }
+
+        // 發行年期分析
+        function analyzeByIssueYears() {
+            const yearsStats = {};
+            
+            cbData.forEach(item => {
+                const years = item.issue_years;
+                if (!years || years === 0 || years === '') return;
+                
+                const yearKey = `${years}年期`;
+                if (!yearsStats[yearKey]) {
+                    yearsStats[yearKey] = {
+                        count: 0,
+                        totalHighest: 0,
+                        totalLowest: 0
+                    };
+                }
+                
+                yearsStats[yearKey].count++;
+                yearsStats[yearKey].totalHighest += item.highest || 0;
+                yearsStats[yearKey].totalLowest += item.lowest || 0;
+            });
+
+            let html = '';
+            let insightHtml = '<div class="info-box"><h3>💡 分析觀察</h3><ul>';
+            
+            // 按年期排序
+            const sortedYears = Object.entries(yearsStats).sort((a, b) => {
+                return parseInt(a[0]) - parseInt(b[0]);
+            });
+            
+            sortedYears.forEach(([years, stats]) => {
+                const avgHighest = (stats.totalHighest / stats.count).toFixed(2);
+                const avgLowest = (stats.totalLowest / stats.count).toFixed(2);
+                const avgAmplitude = (((stats.totalHighest / stats.count - stats.totalLowest / stats.count) / (stats.totalLowest / stats.count)) * 100).toFixed(1);
+                
+                html += `
+                    <div class="range-card">
+                        <div class="range-name">${years}</div>
+                        <div class="range-count">${stats.count} 檔</div>
+                        <div class="range-avg">最高 ${avgHighest} | 最低 ${avgLowest}</div>
+                        <div class="range-avg">振幅 ${avgAmplitude}%</div>
+                    </div>
+                `;
+                
+                insightHtml += `<li><strong>${years}(${stats.count}檔):</strong> 平均最高價${avgHighest}元，振幅${avgAmplitude}%</li>`;
+            });
+            
+            insightHtml += '</ul></div>';
+            
+            document.getElementById('issueYearsGrid').innerHTML = html;
+            document.getElementById('issueYearsInsight').innerHTML = insightHtml;
+        }
+
+        // 承銷券商分析
+        function analyzeByUnderwriter() {
+            const underwriterStats = {};
+            
+            cbData.forEach(item => {
+                const underwriter = item.underwriter;
+                if (!underwriter || underwriter === 0 || underwriter === '') return;
+                
+                if (!underwriterStats[underwriter]) {
+                    underwriterStats[underwriter] = {
+                        count: 0,
+                        totalHighest: 0,
+                        totalLowest: 0
+                    };
+                }
+                
+                underwriterStats[underwriter].count++;
+                underwriterStats[underwriter].totalHighest += item.highest || 0;
+                underwriterStats[underwriter].totalLowest += item.lowest || 0;
+            });
+
+            // 計算平均並排序
+            const results = Object.entries(underwriterStats)
+                .map(([underwriter, stats]) => ({
+                    name: underwriter,
+                    count: stats.count,
+                    avgHighest: stats.totalHighest / stats.count,
+                    avgLowest: stats.totalLowest / stats.count,
+                    avgAmplitude: ((stats.totalHighest / stats.count - stats.totalLowest / stats.count) / (stats.totalLowest / stats.count)) * 100
+                }))
+                .filter(item => item.count >= 5) // 只顯示5檔以上的券商
+                .sort((a, b) => b.avgHighest - a.avgHighest);
+
+            // 顯示前20名
+            const top20 = results.slice(0, 20);
+            const best = top20[0];
+            
+            let html = '';
+            top20.forEach(item => {
+                const isBest = item.name === best.name;
+                html += `
+                    <div class="issue-card ${isBest ? 'best' : ''}">
+                        <div class="issue-num">${item.name}</div>
+                        <div class="issue-count">${item.count} 檔</div>
+                        <div class="issue-stat">最高 ${item.avgHighest.toFixed(1)}</div>
+                        <div class="issue-stat">最低 ${item.avgLowest.toFixed(1)}</div>
+                        <div class="issue-stat">振幅 ${item.avgAmplitude.toFixed(1)}%</div>
+                        ${isBest ? '<div class="issue-highlight">★ 表現最佳</div>' : ''}
+                    </div>
+                `;
+            });
+            
+            document.getElementById('underwriterGrid').innerHTML = html;
+        }
+
+        // 股本大小分析
+        function analyzeByCapital() {
+            const capitalRanges = {
+                '50億以下': { min: 0, max: 50, count: 0, totalHighest: 0, totalLowest: 0 },
+                '50-100億': { min: 50, max: 100, count: 0, totalHighest: 0, totalLowest: 0 },
+                '100-200億': { min: 100, max: 200, count: 0, totalHighest: 0, totalLowest: 0 },
+                '200-500億': { min: 200, max: 500, count: 0, totalHighest: 0, totalLowest: 0 },
+                '500-1000億': { min: 500, max: 1000, count: 0, totalHighest: 0, totalLowest: 0 },
+                '1000億以上': { min: 1000, max: Infinity, count: 0, totalHighest: 0, totalLowest: 0 }
+            };
+            
+            cbData.forEach(item => {
+                const capital = item.capital_size;
+                if (!capital || capital === 0 || capital === '') return;
+                
+                for (let range in capitalRanges) {
+                    if (capital >= capitalRanges[range].min && capital < capitalRanges[range].max) {
+                        capitalRanges[range].count++;
+                        capitalRanges[range].totalHighest += item.highest || 0;
+                        capitalRanges[range].totalLowest += item.lowest || 0;
+                        break;
+                    }
+                }
+            });
+
+            let html = '';
+            let insightHtml = '<div class="info-box"><h3>💡 分析觀察</h3><ul>';
+            
+            Object.entries(capitalRanges).forEach(([range, stats]) => {
+                if (stats.count === 0) return;
+                
+                const avgHighest = (stats.totalHighest / stats.count).toFixed(2);
+                const avgLowest = (stats.totalLowest / stats.count).toFixed(2);
+                const avgAmplitude = (((stats.totalHighest / stats.count - stats.totalLowest / stats.count) / (stats.totalLowest / stats.count)) * 100).toFixed(1);
+                
+                html += `
+                    <div class="range-card">
+                        <div class="range-name">${range}</div>
+                        <div class="range-count">${stats.count} 檔</div>
+                        <div class="range-avg">最高 ${avgHighest} | 最低 ${avgLowest}</div>
+                        <div class="range-avg">振幅 ${avgAmplitude}%</div>
+                    </div>
+                `;
+                
+                insightHtml += `<li><strong>${range}(${stats.count}檔):</strong> 平均最高價${avgHighest}元，振幅${avgAmplitude}%</li>`;
+            });
+            
+            insightHtml += '</ul></div>';
+            
+            document.getElementById('capitalGrid').innerHTML = html;
+            document.getElementById('capitalInsight').innerHTML = insightHtml;
+        }
+
+        // 轉換價格分析
+        function analyzeByConversionPrice() {
+            const priceRanges = {
+                '20元以下': { min: 0, max: 20, count: 0, totalHighest: 0, totalLowest: 0 },
+                '20-40元': { min: 20, max: 40, count: 0, totalHighest: 0, totalLowest: 0 },
+                '40-60元': { min: 40, max: 60, count: 0, totalHighest: 0, totalLowest: 0 },
+                '60-100元': { min: 60, max: 100, count: 0, totalHighest: 0, totalLowest: 0 },
+                '100-150元': { min: 100, max: 150, count: 0, totalHighest: 0, totalLowest: 0 },
+                '150元以上': { min: 150, max: Infinity, count: 0, totalHighest: 0, totalLowest: 0 }
+            };
+            
+            cbData.forEach(item => {
+                const price = item.conversion_price;
+                if (!price || price === 0 || price === '') return;
+                
+                for (let range in priceRanges) {
+                    if (price >= priceRanges[range].min && price < priceRanges[range].max) {
+                        priceRanges[range].count++;
+                        priceRanges[range].totalHighest += item.highest || 0;
+                        priceRanges[range].totalLowest += item.lowest || 0;
+                        break;
+                    }
+                }
+            });
+
+            let html = '';
+            let insightHtml = '<div class="info-box"><h3>💡 分析觀察</h3><ul>';
+            
+            Object.entries(priceRanges).forEach(([range, stats]) => {
+                if (stats.count === 0) return;
+                
+                const avgHighest = (stats.totalHighest / stats.count).toFixed(2);
+                const avgLowest = (stats.totalLowest / stats.count).toFixed(2);
+                const avgAmplitude = (((stats.totalHighest / stats.count - stats.totalLowest / stats.count) / (stats.totalLowest / stats.count)) * 100).toFixed(1);
+                
+                html += `
+                    <div class="range-card">
+                        <div class="range-name">${range}</div>
+                        <div class="range-count">${stats.count} 檔</div>
+                        <div class="range-avg">最高 ${avgHighest} | 最低 ${avgLowest}</div>
+                        <div class="range-avg">振幅 ${avgAmplitude}%</div>
+                    </div>
+                `;
+                
+                insightHtml += `<li><strong>${range}(${stats.count}檔):</strong> 平均最高價${avgHighest}元，振幅${avgAmplitude}%</li>`;
+            });
+            
+            insightHtml += '</ul></div>';
+            
+            document.getElementById('conversionPriceGrid').innerHTML = html;
+            document.getElementById('conversionPriceInsight').innerHTML = insightHtml;
         }
 
         // 載入資料
