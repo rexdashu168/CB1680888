@@ -69,6 +69,20 @@
             border-top: 1px solid #e2e8f0;
         }
 
+        .view-counter {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 12px;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .view-counter strong {
+            color: #2563eb;
+            font-weight: 700;
+        }
+
         .tabs {
             display: flex;
             gap: 12px;
@@ -393,6 +407,7 @@
             border-left: 5px solid #3b82f6;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             transition: all 0.3s;
+            text-align: center;
         }
 
         .range-card:hover {
@@ -657,7 +672,18 @@
                 <h1>CB可轉債發行歷史價格查詢系統</h1>
             </div>
             <div class="subtitle">掛牌最高價 | 掛牌最低價 | 振幅分析 | 發行次數績效研究</div>
-            <div class="author">by Rex大叔的168台股投資教室</div>
+            <div class="author">
+                by 
+                <a href="https://vocus.cc/user/@rexdashu168" target="_blank" style="color: #2563eb; text-decoration: none; font-weight: 600;">
+                    Rex大叔的168台股投資教室｜方格子 vocus
+                </a>
+                <a href="https://www.youtube.com/@rexdashu168" target="_blank" style="margin-left: 10px; color: #dc2626; text-decoration: none; font-size: 1.1em;" title="YouTube頻道">
+                    ▶️
+                </a>
+            </div>
+            <div class="view-counter">
+                👁️ 累計瀏覽: <strong><span id="viewCount">0</span></strong> 次
+            </div>
         </div>
 
         <div class="tabs">
@@ -679,9 +705,10 @@
             <div class="highlight-box">
                 <h3>💡 功能特色</h3>
                 <ul>
-                    <li><strong>即時搜尋：</strong>輸入關鍵字立即顯示結果，無需按Enter</li>
-                    <li><strong>關鍵數據：</strong>顯示掛牌最高價、最低價及振幅百分比</li>
-                    <li><strong>振幅標示：</strong>紅色為高波動(>50%)、橘色為中波動(20-50%)、綠色為低波動(<20%)</li>
+                    <li><strong>精準搜尋：</strong>輸入代號(如1101)只顯示完全符合的標的,輸入名稱則模糊搜尋</li>
+                    <li><strong>即時統計：</strong>自動計算平均最高價、最低價及振幅,8檔以上顯示排除前三高統計</li>
+                    <li><strong>視覺化呈現：</strong>最高價和振幅採用淡色漸層背景(紅→黃→綠),一眼看出表現差異</li>
+                    <li><strong>顏色說明：</strong>紅色=表現較好、黃色=中等表現、綠色=表現較弱</li>
                 </ul>
             </div>
 
@@ -774,16 +801,21 @@
             <div class="price-range-stats">
                 <h2>📊 掛牌最高價區間統計分析</h2>
                 <div class="range-grid" id="rangeStats"></div>
+                
+                <div class="info-box" style="margin-top: 25px;">
+                    <h3>💡 重點觀察與分析</h3>
+                    <ul>
+                        <li><strong>110元以下區間：</strong>這些CB掛牌後表現較弱,可能受到市場環境不佳、公司基本面疑慮或轉換條件不吸引人等因素影響</li>
+                        <li><strong>110-150元區間：</strong>約佔整體40%,屬於一般表現區間,大多數CB落在此範圍,反映市場常態表現</li>
+                        <li><strong>150元以上區間：</strong>約佔整體46%,顯示可轉債具有相當的上漲潛力,特別是200元以上的標的通常具有良好的轉換價值或市場題材</li>
+                        <li><strong>投資啟示：</strong>掛牌最高價分布呈現兩極化,建議投資人關注公司基本面、轉換條件及市場環境,避免盲目追高或過度悲觀</li>
+                    </ul>
+                </div>
             </div>
 
             <div class="warning-box">
                 <h3>⚠️ 投資風險提示</h3>
-                <ul>
-                    <li>本資料僅供參考，不構成任何投資建議或推薦</li>
-                    <li>可轉債投資涉及價格波動風險，投資人應審慎評估自身風險承受能力</li>
-                    <li>過去績效不代表未來表現，實際投資結果可能有所不同</li>
-                    <li>投資前請詳閱公開說明書，了解商品特性與風險</li>
-                </ul>
+                <p style="margin: 0;">本資料僅供參考,不構成任何投資建議。詳細風險說明請見頁面最下方。</p>
             </div>
 
             <div id="allDataResult"></div>
@@ -837,13 +869,24 @@
         <div class="footer">
             <div class="footer-content">
                 <h3>⚠️ 投資風險提示</h3>
-                <p>本資料僅供參考，不構成任何投資建議或個股推薦。可轉債投資涉及市場風險，投資人應審慎評估自身風險承受能力。過去績效不代表未來表現，實際投資結果可能有所不同。</p>
-                
-                <p style="margin-top: 15px;"><strong>📋 資料來源：</strong>本系統資料整理自公開資訊，實際數據以主管機關及發行公司最新公告為準。</p>
+                <p>本資料僅供參考,不構成任何投資建議或個股推薦。可轉債投資涉及市場風險,投資人應審慎評估自身風險承受能力。過去績效不代表未來表現,實際投資結果可能有所不同。投資前請詳閱公開說明書,了解商品特性與風險。</p>
                 
                 <div class="copyright">
-                    <p>©️ 本系統由 <a href="#">Rex大叔的168台股投資教室</a> 整理製作，僅供個人學習與研究使用。</p>
-                    <p>如有任何問題或建議，歡迎交流討論。</p>
+                    <p style="margin-top: 20px;"><strong>📋 資料來源：</strong>本系統資料整理自公開資訊,實際數據以主管機關及發行公司最新公告為準。資料期間涵蓋93年至114年10月31日。</p>
+                    
+                    <p style="margin-top: 15px;">
+                        ©️ 本系統由 
+                        <a href="https://vocus.cc/user/@rexdashu168" target="_blank">Rex大叔的168台股投資教室｜方格子 vocus</a> 
+                        整理製作,僅供個人學習與研究使用。
+                    </p>
+                    
+                    <p style="margin-top: 10px;">
+                        📧 聯絡信箱: <a href="mailto:rexdashu168@gmail.com">rexdashu168@gmail.com</a>
+                        | 
+                        ▶️ <a href="https://www.youtube.com/@rexdashu168" target="_blank">YouTube頻道</a>
+                    </p>
+                    
+                    <p style="margin-top: 10px; color: #94a3b8;">如有任何問題或建議,歡迎交流討論。</p>
                 </div>
             </div>
         </div>
@@ -868,6 +911,75 @@
         }
 
         // 載入發行次數分析
+        function generateStatsInfo(data) {
+            if (data.length === 0) return '';
+
+            const totalHighest = data.reduce((sum, item) => sum + (item.highest || 0), 0);
+            const totalLowest = data.reduce((sum, item) => sum + (item.lowest || 0), 0);
+            const avgHighest = (totalHighest / data.length).toFixed(2);
+            const avgLowest = (totalLowest / data.length).toFixed(2);
+            const avgAmplitude = ((avgHighest - avgLowest) / avgLowest * 100).toFixed(1);
+
+            let statsHTML = `
+                <div class="info-box" style="background: #dbeafe; border-color: #3b82f6; margin-bottom: 20px;">
+                    <strong style="color: #1e40af; font-size: 16px;">
+                        📊 查詢結果統計 (${data.length}檔)
+                        | 最高價平均: ${avgHighest} 元
+                        | 最低價平均: ${avgLowest} 元
+                        | 平均振幅: ${avgAmplitude}%
+                    </strong>
+            `;
+
+            // 8檔以上顯示排除前三高統計
+            if (data.length >= 8) {
+                const sortedItems = [...data].sort((a, b) => b.highest - a.highest);
+                const excludedItems = sortedItems.slice(3);
+                
+                const excludedTotalHighest = excludedItems.reduce((sum, item) => sum + item.highest, 0);
+                const excludedTotalLowest = excludedItems.reduce((sum, item) => sum + item.lowest, 0);
+                const excludedAvgHighest = (excludedTotalHighest / excludedItems.length).toFixed(2);
+                const excludedAvgLowest = (excludedTotalLowest / excludedItems.length).toFixed(2);
+                const excludedAvgAmplitude = ((excludedAvgHighest - excludedAvgLowest) / excludedAvgLowest * 100).toFixed(1);
+
+                statsHTML += `
+                    <br><br>
+                    <strong style="color: #ea580c; font-size: 16px;">
+                        🎯 排除前三高統計 (${excludedItems.length}檔)
+                        | 最高價平均: ${excludedAvgHighest} 元
+                        | 最低價平均: ${excludedAvgLowest} 元
+                        | 平均振幅: ${excludedAvgAmplitude}%
+                    </strong>
+                    <p style="color: #64748b; font-size: 13px; margin-top: 8px;">
+                        💡 排除極端值後更能反映整體表現
+                    </p>
+                `;
+            }
+
+            statsHTML += `</div>`;
+            return statsHTML;
+        }
+
+        // 計算漸層顏色
+        function getGradientColor(value, min, max, reverse = false) {
+            const ratio = (value - min) / (max - min);
+            const adjustedRatio = reverse ? 1 - ratio : ratio;
+            
+            let r, g, b;
+            if (adjustedRatio < 0.5) {
+                // 綠色到黃色
+                r = Math.round(144 + (255 - 144) * (adjustedRatio * 2));
+                g = Math.round(238 - (238 - 193) * (adjustedRatio * 2));
+                b = Math.round(144 - 144 * (adjustedRatio * 2));
+            } else {
+                // 黃色到紅色
+                r = 255;
+                g = Math.round(193 - 193 * ((adjustedRatio - 0.5) * 2));
+                b = 0;
+            }
+            
+            return `rgb(${r}, ${g}, ${b}, 0.15)`;
+        }
+
         function loadIssueAnalysis() {
             const issueStats = {};
             const chineseNums = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
@@ -965,8 +1077,9 @@
                 return;
             }
 
+            // 精準搜尋:代號完全符合 或 名稱包含關鍵字
             const results = cbData.filter(item => 
-                item.code.includes(keyword) || item.name.includes(keyword)
+                item.code === keyword || item.name.includes(keyword)
             );
 
             if (results.length === 0) {
@@ -974,7 +1087,9 @@
                 return;
             }
 
-            resultDiv.innerHTML = createTable(results);
+            // 加入統計資訊
+            const statsInfo = generateStatsInfo(results);
+            resultDiv.innerHTML = statsInfo + createTable(results);
         }
 
         function addBatchItem(event) {
@@ -1031,7 +1146,7 @@
             const avgLowest = (totalLowest / batchItems.length).toFixed(2);
             const avgAmplitude = ((avgHighest - avgLowest) / avgLowest * 100).toFixed(1);
 
-            statsDiv.innerHTML = `
+            let statsHTML = `
                 <div class="info-box" style="background: #dbeafe; border-color: #3b82f6;">
                     <strong style="color: #1e40af; font-size: 16px;">
                         📊 已選擇 ${batchItems.length} 檔 
@@ -1039,8 +1154,41 @@
                         | 最低價平均: ${avgLowest} 元
                         | 平均振幅: ${avgAmplitude}%
                     </strong>
-                </div>
             `;
+
+            // 8檔以上顯示排除前三高統計
+            if (batchItems.length >= 8) {
+                const sortedItems = [...batchItems].sort((a, b) => b.highest - a.highest);
+                const excludedItems = sortedItems.slice(3); // 排除前3高
+                
+                const excludedTotalHighest = excludedItems.reduce((sum, item) => sum + item.highest, 0);
+                const excludedTotalLowest = excludedItems.reduce((sum, item) => sum + item.lowest, 0);
+                const excludedAvgHighest = (excludedTotalHighest / excludedItems.length).toFixed(2);
+                const excludedAvgLowest = (excludedTotalLowest / excludedItems.length).toFixed(2);
+                const excludedAvgAmplitude = ((excludedAvgHighest - excludedAvgLowest) / excludedAvgLowest * 100).toFixed(1);
+
+                statsHTML += `
+                    <br><br>
+                    <strong style="color: #ea580c; font-size: 16px;">
+                        🎯 排除前三高統計 (${excludedItems.length}檔)
+                        | 最高價平均: ${excludedAvgHighest} 元
+                        | 最低價平均: ${excludedAvgLowest} 元
+                        | 平均振幅: ${excludedAvgAmplitude}%
+                    </strong>
+                    <p style="color: #64748b; font-size: 13px; margin-top: 8px;">
+                        💡 排除極端值後更能反映整體表現
+                    </p>
+                `;
+            } else if (batchItems.length > 0 && batchItems.length < 8) {
+                statsHTML += `
+                    <p style="color: #64748b; font-size: 13px; margin-top: 8px;">
+                        💡 加入至少8檔標的即可看到「排除前三高」統計分析
+                    </p>
+                `;
+            }
+
+            statsHTML += `</div>`;
+            statsDiv.innerHTML = statsHTML;
 
             resultDiv.innerHTML = createTable(batchItems, true);
         }
@@ -1057,6 +1205,14 @@
             const totalLowest = data.reduce((sum, item) => sum + (item.lowest || 0), 0);
             const avgHighest = (totalHighest / data.length).toFixed(2);
             const avgLowest = (totalLowest / data.length).toFixed(2);
+
+            // 計算振幅和最高價的範圍(用於漸層色)
+            const amplitudes = data.map(item => ((item.highest - item.lowest) / item.lowest * 100));
+            const highests = data.map(item => item.highest);
+            const minAmp = Math.min(...amplitudes);
+            const maxAmp = Math.max(...amplitudes);
+            const minHigh = Math.min(...highests);
+            const maxHigh = Math.max(...highests);
 
             let html = `
                 <table>
@@ -1077,13 +1233,17 @@
                 const amplitude = ((item.highest - item.lowest) / item.lowest * 100).toFixed(1);
                 const amplitudeClass = amplitude > 50 ? 'vibration-high' : amplitude > 20 ? 'vibration-medium' : 'vibration-low';
                 
+                // 計算漸層背景色
+                const ampBgColor = data.length > 1 ? getGradientColor(parseFloat(amplitude), minAmp, maxAmp, false) : 'transparent';
+                const highBgColor = data.length > 1 ? getGradientColor(item.highest, minHigh, maxHigh, false) : 'transparent';
+                
                 html += `
                     <tr>
                         <td>${item.code}</td>
                         <td>${item.name}</td>
-                        <td>${item.highest}</td>
+                        <td style="background: ${highBgColor}; font-weight: 600;">${item.highest}</td>
                         <td>${item.lowest}</td>
-                        <td class="${amplitudeClass}">${amplitude}%</td>
+                        <td style="background: ${ampBgColor};" class="${amplitudeClass}">${amplitude}%</td>
                         ${showRemove ? `<td><button onclick="removeBatchItem('${item.code}')" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">移除</button></td>` : ''}
                     </tr>
                 `;
@@ -1165,8 +1325,24 @@
             resultDiv.innerHTML = createTable(cbData);
         }
 
+        // 瀏覽計數功能
+        function updateViewCount() {
+            const storageKey = 'cb_system_view_count';
+            let count = localStorage.getItem(storageKey);
+            
+            if (!count) {
+                count = 0;
+            }
+            
+            count = parseInt(count) + 1;
+            localStorage.setItem(storageKey, count);
+            
+            document.getElementById('viewCount').textContent = count.toLocaleString();
+        }
+
         window.onload = function() {
             loadData();
+            updateViewCount();
         };
     </script>
 </body>
