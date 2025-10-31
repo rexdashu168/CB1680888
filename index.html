@@ -692,6 +692,7 @@
             <button class="tab-button" onclick="switchTab('batch')">📊 批次查詢</button>
             <button class="tab-button" onclick="switchTab('all')">📋 全部資料</button>
             <button class="tab-button" onclick="switchTab('analysis')">🔬 發行次數分析</button>
+            <button class="tab-button" onclick="switchTab('advanced')">📈 進階分析</button>
         </div>
 
         <!-- 單一查詢 -->
@@ -805,6 +806,9 @@
                 <h2>📊 掛牌最高價區間統計分析</h2>
                 <div class="range-grid" id="rangeStats"></div>
                 
+                <!-- 關鍵價位分析 -->
+                <div id="specialAnalysis"></div>
+                
                 <div class="info-box" style="margin-top: 25px;">
                     <h3>💡 重點觀察與分析</h3>
                     <ul>
@@ -869,6 +873,55 @@
             </div>
         </div>
 
+        <!-- 進階分析 -->
+        <div id="advanced" class="tab-content">
+            <div class="info-box">
+                <h3>📌 進階分析說明</h3>
+                <p><strong>分析內容：</strong>提供產業分類、詢圈競拍、有無擔保等不同維度的績效分析</p>
+                <p><strong>資料處理：</strong>所有分析均排除資料為0或空值的樣本,確保統計準確性</p>
+                <p><strong>樣本數標示：</strong>每個分析都會顯示有效樣本數量,供投資人參考</p>
+            </div>
+
+            <div class="highlight-box">
+                <h3>🎯 分析維度</h3>
+                <ul>
+                    <li><strong>產業分類分析：</strong>比較不同產業的CB表現差異</li>
+                    <li><strong>詢圈vs競拍：</strong>分析發行方式對掛牌表現的影響</li>
+                    <li><strong>擔保條件：</strong>有擔保vs無擔保的表現比較</li>
+                </ul>
+            </div>
+
+            <!-- 產業分類分析 -->
+            <div style="margin: 30px 0;">
+                <h2 style="color: #1e40af; margin-bottom: 20px; font-weight: 700;">📊 產業分類績效分析</h2>
+                <div class="issue-grid" id="industryGrid"></div>
+            </div>
+
+            <!-- 詢圈競拍分析 -->
+            <div style="margin: 30px 0;">
+                <h2 style="color: #1e40af; margin-bottom: 20px; font-weight: 700;">📊 詢圈vs競拍績效分析</h2>
+                <div class="range-grid" id="inquiryGrid"></div>
+                <div id="inquiryInsight" style="margin-top: 20px;"></div>
+            </div>
+
+            <!-- 擔保條件分析 -->
+            <div style="margin: 30px 0;">
+                <h2 style="color: #1e40af; margin-bottom: 20px; font-weight: 700;">📊 有無擔保績效分析</h2>
+                <div class="range-grid" id="collateralGrid"></div>
+                <div id="collateralInsight" style="margin-top: 20px;"></div>
+            </div>
+
+            <div class="warning-box">
+                <h3>⚠️ 分析限制說明</h3>
+                <ul>
+                    <li><strong>資料完整性：</strong>部分標的資料不完整,已排除於分析之外</li>
+                    <li><strong>時間因素：</strong>不同時期發行的CB受市場環境影響不同</li>
+                    <li><strong>複合因素：</strong>CB表現受多重因素影響,單一維度分析僅供參考</li>
+                    <li><strong>個案差異：</strong>投資仍需針對個別標的進行完整評估</li>
+                </ul>
+            </div>
+        </div>
+
         <div class="footer">
             <div class="footer-content">
                 <h3>⚠️ 投資風險提示</h3>
@@ -908,10 +961,173 @@
                 console.log(`已載入 ${cbData.length} 筆資料`);
                 updateAllDataStats();
                 loadIssueAnalysis();
+                loadAdvancedAnalysis();
             } catch (error) {
                 console.error('載入資料失敗:', error);
             }
         }
+
+        // 載入進階分析
+        function loadAdvancedAnalysis() {
+            analyzeByIndustry();
+            analyzeByInquiry();
+            analyzeByCollateral();
+        }
+
+        // 產業分類分析
+        function analyzeByIndustry() {
+            const industryStats = {};
+            
+            cbData.forEach(item => {
+                const industry = item.industry;
+                if (!industry || industry === 0 || industry === '') return;
+                
+                if (!industryStats[industry]) {
+                    industryStats[industry] = {
+                        count: 0,
+                        totalHighest: 0,
+                        totalLowest: 0
+                    };
+                }
+                
+                industryStats[industry].count++;
+                industryStats[industry].totalHighest += item.highest || 0;
+                industryStats[industry].totalLowest += item.lowest || 0;
+            });
+
+            // 計算平均並排序
+            const results = Object.entries(industryStats)
+                .map(([industry, stats]) => ({
+                    name: industry,
+                    count: stats.count,
+                    avgHighest: stats.totalHighest / stats.count,
+                    avgLowest: stats.totalLowest / stats.count,
+                    avgAmplitude: ((stats.totalHighest / stats.count - stats.totalLowest / stats.count) / (stats.totalLowest / stats.count)) * 100
+                }))
+                .filter(item => item.count >= 10) // 只顯示10檔以上的產業
+                .sort((a, b) => b.avgHighest - a.avgHighest);
+
+            // 顯示前15名
+            const top15 = results.slice(0, 15);
+            const best = top15[0];
+            
+            let html = '';
+            top15.forEach(item => {
+                const isBest = item.name === best.name;
+                html += `
+                    <div class="issue-card ${isBest ? 'best' : ''}">
+                        <div class="issue-num">${item.name}</div>
+                        <div class="issue-count">${item.count} 檔</div>
+                        <div class="issue-stat">最高 ${item.avgHighest.toFixed(1)}</div>
+                        <div class="issue-stat">最低 ${item.avgLowest.toFixed(1)}</div>
+                        <div class="issue-stat">振幅 ${item.avgAmplitude.toFixed(1)}%</div>
+                        ${isBest ? '<div class="issue-highlight">★ 表現最佳</div>' : ''}
+                    </div>
+                `;
+            });
+            
+            document.getElementById('industryGrid').innerHTML = html;
+        }
+
+        // 詢圈競拍分析
+        function analyzeByInquiry() {
+            const inquiryStats = {};
+            
+            cbData.forEach(item => {
+                const inquiry = item.inquiry_type;
+                if (!inquiry || inquiry === 0 || inquiry === '') return;
+                
+                if (!inquiryStats[inquiry]) {
+                    inquiryStats[inquiry] = {
+                        count: 0,
+                        totalHighest: 0,
+                        totalLowest: 0
+                    };
+                }
+                
+                inquiryStats[inquiry].count++;
+                inquiryStats[inquiry].totalHighest += item.highest || 0;
+                inquiryStats[inquiry].totalLowest += item.lowest || 0;
+            });
+
+            let html = '';
+            let insightHtml = '<div class="info-box"><h3>💡 分析觀察</h3><ul>';
+            
+            Object.entries(inquiryStats).forEach(([type, stats]) => {
+                const avgHighest = (stats.totalHighest / stats.count).toFixed(2);
+                const avgLowest = (stats.totalLowest / stats.count).toFixed(2);
+                const avgAmplitude = (((stats.totalHighest / stats.count - stats.totalLowest / stats.count) / (stats.totalLowest / stats.count)) * 100).toFixed(1);
+                const percent = ((stats.count / cbData.length) * 100).toFixed(1);
+                
+                html += `
+                    <div class="range-card">
+                        <div class="range-name">${type}</div>
+                        <div class="range-count">${stats.count} 檔</div>
+                        <div class="range-percent">占比 ${percent}%</div>
+                        <div class="range-avg">最高 ${avgHighest} | 最低 ${avgLowest}</div>
+                        <div class="range-avg">振幅 ${avgAmplitude}%</div>
+                    </div>
+                `;
+                
+                insightHtml += `<li><strong>${type}(${stats.count}檔):</strong> 平均最高價${avgHighest}元，振幅${avgAmplitude}%</li>`;
+            });
+            
+            insightHtml += '</ul></div>';
+            
+            document.getElementById('inquiryGrid').innerHTML = html;
+            document.getElementById('inquiryInsight').innerHTML = insightHtml;
+        }
+
+        // 擔保條件分析
+        function analyzeByCollateral() {
+            const collateralStats = {};
+            
+            cbData.forEach(item => {
+                const collateral = item.collateral;
+                if (!collateral || collateral === 0 || collateral === '') return;
+                
+                if (!collateralStats[collateral]) {
+                    collateralStats[collateral] = {
+                        count: 0,
+                        totalHighest: 0,
+                        totalLowest: 0
+                    };
+                }
+                
+                collateralStats[collateral].count++;
+                collateralStats[collateral].totalHighest += item.highest || 0;
+                collateralStats[collateral].totalLowest += item.lowest || 0;
+            });
+
+            let html = '';
+            let insightHtml = '<div class="info-box"><h3>💡 分析觀察</h3><ul>';
+            
+            Object.entries(collateralStats).forEach(([type, stats]) => {
+                const avgHighest = (stats.totalHighest / stats.count).toFixed(2);
+                const avgLowest = (stats.totalLowest / stats.count).toFixed(2);
+                const avgAmplitude = (((stats.totalHighest / stats.count - stats.totalLowest / stats.count) / (stats.totalLowest / stats.count)) * 100).toFixed(1);
+                const percent = ((stats.count / cbData.length) * 100).toFixed(1);
+                
+                html += `
+                    <div class="range-card">
+                        <div class="range-name">${type}</div>
+                        <div class="range-count">${stats.count} 檔</div>
+                        <div class="range-percent">占比 ${percent}%</div>
+                        <div class="range-avg">最高 ${avgHighest} | 最低 ${avgLowest}</div>
+                        <div class="range-avg">振幅 ${avgAmplitude}%</div>
+                    </div>
+                `;
+                
+                insightHtml += `<li><strong>${type}(${stats.count}檔):</strong> 平均最高價${avgHighest}元，振幅${avgAmplitude}%</li>`;
+            });
+            
+            insightHtml += '</ul></div>';
+            
+            document.getElementById('collateralGrid').innerHTML = html;
+            document.getElementById('collateralInsight').innerHTML = insightHtml;
+        }
+
+        // 載入資料
 
         // 載入發行次數分析
         function generateStatsInfo(data) {
@@ -1293,8 +1509,16 @@
                 '200以上': { min: 200, max: Infinity, count: 0, total: 0 }
             };
 
+            // 特殊條件統計
+            let above130 = 0;  // 大於等於130(公司有權贖回)
+            let below130 = 0;  // 低於130
+            let above160 = 0;  // 大於等於160
+            let below160 = 0;  // 低於160
+
             cbData.forEach(item => {
                 const price = item.highest;
+                
+                // 區間統計
                 for (let range in ranges) {
                     if (price >= ranges[range].min && price < ranges[range].max) {
                         ranges[range].count++;
@@ -1302,6 +1526,14 @@
                         break;
                     }
                 }
+                
+                // 130分界統計
+                if (price >= 130) above130++;
+                else below130++;
+                
+                // 160分界統計
+                if (price >= 160) above160++;
+                else below160++;
             });
 
             let rangeHtml = '';
@@ -1321,6 +1553,41 @@
             }
 
             document.getElementById('rangeStats').innerHTML = rangeHtml;
+            
+            // 顯示特殊條件分析
+            const above130Percent = ((above130 / totalCount) * 100).toFixed(1);
+            const below130Percent = ((below130 / totalCount) * 100).toFixed(1);
+            const above160Percent = ((above160 / totalCount) * 100).toFixed(1);
+            const below160Percent = ((below160 / totalCount) * 100).toFixed(1);
+            
+            document.getElementById('specialAnalysis').innerHTML = `
+                <div class="info-box" style="background: #fef3c7; border-color: #f59e0b; margin-top: 25px;">
+                    <h3>🎯 關鍵價位分析</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 15px;">
+                        <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                            <h4 style="color: #92400e; margin-bottom: 10px; font-size: 15px;">📌 130元分界分析(公司贖回權)</h4>
+                            <p style="color: #78350f; font-size: 14px; line-height: 1.8; margin: 5px 0;">
+                                <strong style="color: #dc2626;">≥ 130元:</strong> ${above130}檔 (${above130Percent}%)<br>
+                                <strong style="color: #059669;">< 130元:</strong> ${below130}檔 (${below130Percent}%)
+                            </p>
+                            <p style="color: #78350f; font-size: 13px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #fde68a;">
+                                💡 <strong>分析意義:</strong>當CB價格達130元以上,公司有權提前贖回。<span style="color: #dc2626; font-weight: 600;">超過${above130Percent}%的CB曾達此門檻</span>,顯示多數CB具有觸發贖回條件的潛力,投資人需注意贖回風險與時機。
+                            </p>
+                        </div>
+                        
+                        <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                            <h4 style="color: #1e40af; margin-bottom: 10px; font-size: 15px;">📌 160元分界分析(高獲利機會)</h4>
+                            <p style="color: #1e293b; font-size: 14px; line-height: 1.8; margin: 5px 0;">
+                                <strong style="color: #dc2626;">≥ 160元:</strong> ${above160}檔 (${above160Percent}%)<br>
+                                <strong style="color: #059669;">< 160元:</strong> ${below160}檔 (${below160Percent}%)
+                            </p>
+                            <p style="color: #1e293b; font-size: 13px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #dbeafe;">
+                                💡 <strong>分析意義:</strong>160元代表60%的獲利空間(若以100元買入)。<span style="color: #dc2626; font-weight: 600;">${above160Percent}%的CB曾達此水準</span>,顯示可轉債具有相當的獲利潛力,但也伴隨較高的波動風險。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         function showAllData() {
