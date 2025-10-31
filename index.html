@@ -1284,6 +1284,8 @@
                 showAllData();
             } else if (tabName === 'analysis' && issueAnalysis) {
                 updateIssueGrid();
+            } else if (tabName === 'advanced' && cbData.length > 0) {
+                loadAdvancedAnalysis();
             }
         }
 
