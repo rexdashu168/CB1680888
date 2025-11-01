@@ -652,15 +652,34 @@
             }
 
             table {
-                font-size: 13px;
+                font-size: 12px;
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
             }
 
             th, td {
-                padding: 10px 8px;
+                padding: 8px 6px;
+                min-width: 80px;
+            }
+            
+            th:first-child, td:first-child {
+                position: sticky;
+                left: 0;
+                background: white;
+                z-index: 1;
+            }
+            
+            thead th:first-child {
+                z-index: 2;
             }
 
             .issue-grid {
                 grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+            
+            .range-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -1631,14 +1650,14 @@
 
             if (!code) return;
 
-            const item = cbData.find(d => d.code === code);
+            const item = cbData.find(d => String(d.code) === code || d.code === parseInt(code));
             
             if (!item) {
                 alert('查無此代碼');
                 return;
             }
 
-            if (batchItems.some(b => b.code === code)) {
+            if (batchItems.some(b => String(b.code) === code)) {
                 alert('此代碼已加入');
                 return;
             }
@@ -1746,6 +1765,7 @@
             const maxHigh = Math.max(...highests);
 
             let html = `
+                <div style="overflow-x: auto;">
                 <table>
                     <thead>
                         <tr>
@@ -1754,6 +1774,14 @@
                             <th>掛牌最高價</th>
                             <th>掛牌最低價</th>
                             <th>振幅</th>
+                            <th>發行規模(億)</th>
+                            <th>股本(億)</th>
+                            <th>轉換價格</th>
+                            <th>發行年期</th>
+                            <th>產業分類</th>
+                            <th>承銷券商</th>
+                            <th>詢圈競拍</th>
+                            <th>有無擔保</th>
                             ${showRemove ? '<th>操作</th>' : ''}
                         </tr>
                     </thead>
@@ -1775,6 +1803,14 @@
                         <td style="background: ${highBgColor}; font-weight: 600;">${item.highest}</td>
                         <td>${item.lowest}</td>
                         <td style="background: ${ampBgColor};" class="${amplitudeClass}">${amplitude}%</td>
+                        <td>${item.issue_size || '-'}</td>
+                        <td>${item.capital_size || '-'}</td>
+                        <td>${item.conversion_price || '-'}</td>
+                        <td>${item.issue_years ? item.issue_years + '年' : '-'}</td>
+                        <td>${item.industry || '-'}</td>
+                        <td>${item.underwriter || '-'}</td>
+                        <td>${item.inquiry_type || '-'}</td>
+                        <td>${item.collateral || '-'}</td>
                         ${showRemove ? `<td><button onclick="removeBatchItem('${item.code}')" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">移除</button></td>` : ''}
                     </tr>
                 `;
@@ -1788,6 +1824,7 @@
                         <td>${avgHighest}</td>
                         <td>${avgLowest}</td>
                         <td>${totalAmplitude}%</td>
+                        <td colspan="8"></td>
                         ${showRemove ? '<td></td>' : ''}
                     </tr>
                 `;
@@ -1796,6 +1833,7 @@
             html += `
                     </tbody>
                 </table>
+                </div>
             `;
 
             return html;
